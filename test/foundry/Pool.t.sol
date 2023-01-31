@@ -5,13 +5,10 @@ import "forge-std/Test.sol";
 import "forge-std/console2.sol";
 
 import "contracts/Bridge.sol";
-import "contracts/interfaces/IETH.sol";
-import "contracts/NativeTokenMgr.sol";
 import "contracts/mock/MyToken.sol";
 
 contract PoolTest is Test {
     Bridge bridge;
-    NativeTokenMgr nativeTokenMgr;
 
     MyTokenMock Token;
 
@@ -25,26 +22,12 @@ contract PoolTest is Test {
 
     function setUp() public {
         bridge = new Bridge();
-        nativeTokenMgr = new NativeTokenMgr();
-        nativeTokenMgr.initialize();
-        nativeTokenMgr.setAdmin(address(bridge), true);
-
-        bridge.initialize(address(0), address(nativeTokenMgr), PublicKey);
+        bridge.initialize(address(0), PublicKey);
 
         Token = new MyTokenMock();
 
         Token.mintTo(user, 10000 ether);
         vm.deal(user, 10000 ether);
-    }
-
-    function testSetNativeWrap() public {
-        assertEq(bridge.nativeWrap(), address(nativeTokenMgr));
-        bridge.setNativeWrap(address(1));
-        assertEq(bridge.nativeWrap(), address(1));
-
-        vm.prank(user);
-        vm.expectRevert("Ownable: caller is not the owner");
-        bridge.setNativeWrap(address(1));
     }
 
     function testAddLiquidity() public {
@@ -70,7 +53,7 @@ contract PoolTest is Test {
         bridge.addNativeLiquidity{value: 100 ether}();
         vm.stopPrank();
 
-        assertEq(address(nativeTokenMgr).balance, 100 ether);
+        assertEq(address(bridge).balance, 100 ether);
         assertEq(Token.balanceOf(address(bridge)), 100 ether);
     }
 
@@ -123,7 +106,7 @@ contract PoolTest is Test {
             sign(address(0), withdraw)
         );
         assertEq(withdraw.balance, 100 ether);
-        assertEq(address(nativeTokenMgr).balance, 0 ether);
+        assertEq(address(bridge).balance, 0 ether);
         vm.stopPrank();
     }
 

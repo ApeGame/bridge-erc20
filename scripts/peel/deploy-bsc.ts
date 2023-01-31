@@ -16,24 +16,11 @@ const pubKey = "0x5767A8EdE4d14595162920C4019a5e79D685FF67";
 async function main() {
   const feeReceiver = (await ethers.getSigners())[0].address;
 
-  // 1、deploy native token mgr contract
-  const NativeTokenMgrFactory = await ethers.getContractFactory(
-    "NativeTokenMgr"
-  );
-  const NativeTokenMgrProxy = await upgrades.deployProxy(
-    NativeTokenMgrFactory,
-    [],
-    {
-      initializer: "initialize",
-    }
-  );
-  await NativeTokenMgrProxy.deployed();
-
   // 2、deploy bridge contract
   const BridgeFactory = await ethers.getContractFactory("Bridge");
   const BridgeProxy = await upgrades.deployProxy(
     BridgeFactory,
-    [feeReceiver, NativeTokenMgrProxy.address, pubKey],
+    [feeReceiver, pubKey],
     {
       initializer: "initialize",
     }
@@ -41,14 +28,10 @@ async function main() {
   await BridgeProxy.deployed();
   console.log(`bridge deployed: ${BridgeProxy.address}`);
 
-  // 3、native token mgr set amin
-  let tx = await NativeTokenMgrProxy.setAdmin(BridgeProxy.address, true);
-  await tx.wait();
-
   // 4、set min max burn
-  tx = await BridgeProxy.setMinBurn(
+  let tx = await BridgeProxy.setMinBurn(
     [peelContract],
-    [ethers.utils.parseEther("50")]
+    [ethers.utils.parseEther("10")]
   );
   await tx.wait();
 
@@ -71,23 +54,9 @@ async function main() {
   await Sleep(10000);
 
   // 6、 verify contract
-  const nativeTokenMgrLogicContract =
-    await upgrades.erc1967.getImplementationAddress(
-      NativeTokenMgrProxy.address
-    );
 
   const bridgeLogicContract = await upgrades.erc1967.getImplementationAddress(
     BridgeProxy.address
-  );
-
-  console.log(
-    `NativeTokenMgr(${nativeTokenMgrLogicContract}) verify & push contract, guid: ${await VerifyContractEthScan(
-      nativeTokenMgrLogicContract,
-      "contracts/NativeTokenMgr.sol:NativeTokenMgr",
-      "",
-      baseUrl,
-      apikey
-    )}`
   );
 
   console.log(
@@ -98,13 +67,6 @@ async function main() {
       baseUrl,
       apikey
     )}`
-  );
-
-  await VerifyProxyEthScan(
-    NativeTokenMgrProxy.address,
-    nativeTokenMgrLogicContract,
-    baseUrl,
-    apikey
   );
 
   await VerifyProxyEthScan(

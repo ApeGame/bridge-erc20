@@ -12,7 +12,7 @@ contract MyTokenMock is ERC20Upgradeable, OwnableUpgradeable {
         __Ownable_init();
     }
 
-    function mintTo(address to, uint256 amount) public onlyOwner {
+    function mintTo(address to, uint256 amount) public {
         _mint(to, amount);
     }
 }

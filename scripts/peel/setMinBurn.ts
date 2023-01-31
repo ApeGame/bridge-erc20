@@ -5,12 +5,6 @@ import { BigNumber, constants } from "ethers";
 //
 // When running the script with `npx hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
-import { VerifyContractEthScan, VerifyProxyEthScan } from "../common-ethscan";
-import { Sleep } from "../common";
-
-const baseUrl: string = "https://api.bscscan.com/api";
-const apikey: string = "Z86V9AC619GAGEYVWBP86CTGDDPSS4JS8R";
-
 let bridgeContract: string;
 let peelContract: string;
 let amount: BigNumber;

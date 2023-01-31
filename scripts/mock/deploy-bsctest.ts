@@ -24,24 +24,11 @@ async function main() {
   // 2、 mint to owner
   mt.mintTo(owner.address, ethers.utils.parseEther("10000"));
 
-  // 3、deploy native token mgr contract
-  const NativeTokenMgrFactory = await ethers.getContractFactory(
-    "NativeTokenMgr"
-  );
-  const NativeTokenMgrProxy = await upgrades.deployProxy(
-    NativeTokenMgrFactory,
-    [],
-    {
-      initializer: "initialize",
-    }
-  );
-  await NativeTokenMgrProxy.deployed();
-
-  // 4、deploy bridge contract
+  // 3、deploy bridge contract
   const BridgeFactory = await ethers.getContractFactory("Bridge");
   const BridgeProxy = await upgrades.deployProxy(
     BridgeFactory,
-    [feeReceiver, NativeTokenMgrProxy.address, pubKey],
+    [feeReceiver, pubKey],
     {
       initializer: "initialize",
     }
@@ -49,12 +36,8 @@ async function main() {
   await BridgeProxy.deployed();
   console.log(`bridge deployed: ${BridgeProxy.address}`);
 
-  // 5、native token mgr set amin
-  let tx = await NativeTokenMgrProxy.setAdmin(BridgeProxy.address, true);
-  await tx.wait();
-
-  // 5、set min max burn
-  tx = await BridgeProxy.setMinBurn(
+  // 4、set min max burn
+  let tx = await BridgeProxy.setMinBurn(
     [mt.address],
     [ethers.utils.parseEther("0.1")]
   );
@@ -66,7 +49,7 @@ async function main() {
   );
   await tx.wait();
 
-  // 6、add liquidity
+  // 5、add liquidity
   tx = await mt.approve(BridgeProxy.address, ethers.utils.parseEther("9000"));
   await tx.wait();
   tx = await BridgeProxy.addLiquidity(
@@ -78,7 +61,7 @@ async function main() {
   // sleep 10s
   await Sleep(10000);
 
-  // 7、 verify contract
+  // 6、 verify contract
   console.log(
     `MyTokenMock(${
       mt.address
@@ -91,23 +74,8 @@ async function main() {
     )}`
   );
 
-  const nativeTokenMgrLogicContract =
-    await upgrades.erc1967.getImplementationAddress(
-      NativeTokenMgrProxy.address
-    );
-
   const bridgeLogicContract = await upgrades.erc1967.getImplementationAddress(
     BridgeProxy.address
-  );
-
-  console.log(
-    `NativeTokenMgr(${nativeTokenMgrLogicContract}) verify & push contract, guid: ${await VerifyContractEthScan(
-      nativeTokenMgrLogicContract,
-      "contracts/NativeTokenMgr.sol:NativeTokenMgr",
-      "",
-      baseUrl,
-      apikey
-    )}`
   );
 
   console.log(
@@ -118,13 +86,6 @@ async function main() {
       baseUrl,
       apikey
     )}`
-  );
-
-  await VerifyProxyEthScan(
-    NativeTokenMgrProxy.address,
-    nativeTokenMgrLogicContract,
-    baseUrl,
-    apikey
   );
 
   await VerifyProxyEthScan(

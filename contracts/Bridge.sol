@@ -46,14 +46,12 @@ contract Bridge is Admin, Pause, Pool {
         bytes32 burnId;
     }
 
-    function initialize(
-        address _feeReceiver,
-        address _nativeWrap,
-        address _pubkey
-    ) public initializer {
+    function initialize(address _feeReceiver, address _pubkey)
+        public
+        initializer
+    {
         __Ownable_init();
         __Pausable_init();
-        __Pool_init(_nativeWrap);
         setPublicKey(_pubkey);
         setFeeReceiver(_feeReceiver);
     }
@@ -115,7 +113,6 @@ contract Bridge is Admin, Pause, Pool {
             _nonce
         );
 
-        _addNative();
         emit Burned(
             burnId_,
             msg.sender,
@@ -134,7 +131,6 @@ contract Bridge is Admin, Pause, Pool {
         public
         whenNotPaused
     {
-        require(nativeWrap != address(0), "Native wrap not set");
         bytes32 hash_ = keccak256(
             abi.encodePacked(
                 _req.sender,
@@ -211,7 +207,6 @@ contract Bridge is Admin, Pause, Pool {
             maxBurn[_token] == 0 || _amount <= maxBurn[_token],
             "Amount too large"
         );
-        require(nativeWrap != address(0), "Native wrap not set");
         burnId = keccak256(
             abi.encodePacked(
                 msg.sender,

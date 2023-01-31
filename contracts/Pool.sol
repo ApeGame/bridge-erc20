@@ -5,19 +5,15 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "contracts/lib/Pause.sol";
-import "contracts/interfaces/IETH.sol";
 import "contracts/lib/Verify.sol";
 
 contract Pool is Initializable, Pause, Verify {
-    address public nativeWrap;
     mapping(bytes32 => bool) recordsSign;
 
     enum TokenType {
         NATIVE,
         ERC20
     }
-
-    event SetNativeWrap(address nativeWrap);
 
     // liquidity events
     event LiquidityAdded(
@@ -35,20 +31,6 @@ contract Pool is Initializable, Pause, Verify {
         uint256 amount
     );
 
-    function __Pool_init(address _nativeWrap) internal onlyInitializing {
-        _setNativeWrap(_nativeWrap);
-    }
-
-    function _setNativeWrap(address _nativeWrap) internal {
-        nativeWrap = _nativeWrap;
-        emit SetNativeWrap(_nativeWrap);
-    }
-
-    /// @notice set native token management contract
-    function setNativeWrap(address _nativeWrap) public onlyOwner {
-        _setNativeWrap(_nativeWrap);
-    }
-
     /// @notice add liquidity for erc20 token, bridge contract will be bridged to users in the pool
     /// @param _token erc20 token
     /// @param _amount transfer token amount
@@ -56,6 +38,7 @@ contract Pool is Initializable, Pause, Verify {
         external
         whenNotPaused
     {
+        require(_amount > 0, "Transfer amount needs to be greater than 0");
         require(
             IERC20Upgradeable(_token).transferFrom(
                 msg.sender,
@@ -71,12 +54,10 @@ contract Pool is Initializable, Pause, Verify {
     /// @dev the transferred native token will be transferred to the native token management contract
     function addNativeLiquidity() external payable whenNotPaused {
         require(msg.value > 0, "Transfer amount needs to be greater than 0");
-        require(nativeWrap != address(0), "Native wrap not set");
-        IETH(nativeWrap).deposit{value: msg.value}();
         emit LiquidityAdded(
             msg.sender,
             TokenType.NATIVE,
-            nativeWrap,
+            address(0),
             msg.value
         );
     }
@@ -99,9 +80,9 @@ contract Pool is Initializable, Pause, Verify {
 
         uint256 amount_;
         if (_token == address(0)) {
-            amount_ = nativeWrap.balance;
-            if (amount_ > 0) {
-                IETH(nativeWrap).withdraw(_to, amount_);
+            amount_ = address(this).balance;
+            if (address(this).balance > 0) {
+                payable(_to).transfer(amount_);
                 emit LiquidityRevoked(
                     msg.sender,
                     TokenType.NATIVE,
@@ -147,9 +128,7 @@ contract Pool is Initializable, Pause, Verify {
     }
 
     /// @notice transfer native token to native token management contract
-    function _addNative() internal {
-        IETH(nativeWrap).deposit{value: msg.value}();
-    }
+    // function _addNative() internal {}
 
     /// @notice transfer '_amount' to '_to' in '_token'
     function _transferToken(
@@ -168,7 +147,7 @@ contract Pool is Initializable, Pause, Verify {
     /// @notice withdraw '_amount' to '_to' in native token management contract
     function _transferNative(address _to, uint256 _amount) internal {
         if (_amount > 0) {
-            IETH(nativeWrap).withdraw(_to, _amount);
+            payable(_to).transfer(_amount);
         }
     }
 }

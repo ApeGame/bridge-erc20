@@ -5,13 +5,10 @@ import "forge-std/Test.sol";
 import "forge-std/console2.sol";
 
 import "contracts/Bridge.sol";
-import "contracts/interfaces/IETH.sol";
-import "contracts/NativeTokenMgr.sol";
 import "contracts/mock/MyToken.sol";
 
 contract BridgeTest is Test {
     Bridge bridge;
-    address nativeWrap;
 
     MyTokenMock AToken;
     MyTokenMock BToken;
@@ -30,12 +27,8 @@ contract BridgeTest is Test {
 
     function setUp() public {
         bridge = new Bridge();
-        NativeTokenMgr nativeTokenMgr = new NativeTokenMgr();
-        nativeTokenMgr.initialize();
-        nativeTokenMgr.setAdmin(address(bridge), true);
 
-        nativeWrap = address(nativeTokenMgr);
-        bridge.initialize(FeeReceiver, nativeWrap, PublicKey);
+        bridge.initialize(FeeReceiver, PublicKey);
 
         AToken = new MyTokenMock();
         BToken = new MyTokenMock();
@@ -55,27 +48,6 @@ contract BridgeTest is Test {
 
         bridge.setMinBurn(tokens, minAmounts);
         bridge.setMaxBurn(tokens, maxAmounts);
-    }
-
-    function testNativeTokenMgr() public {
-        NativeTokenMgr(nativeWrap).deposit{value: 1 ether}();
-
-        NativeTokenMgr(nativeWrap).setAdmin(admin, true);
-
-        vm.prank(FeeReceiver);
-        vm.expectRevert("Admin: caller is not the admin");
-        NativeTokenMgr(nativeWrap).withdraw(admin, 1 ether);
-
-        vm.startPrank(admin);
-        vm.expectRevert("Insufficient amount");
-        NativeTokenMgr(nativeWrap).withdraw(admin, 101.1 ether);
-
-        uint256 balance = admin.balance;
-        NativeTokenMgr(nativeWrap).withdraw(admin, 1 ether);
-        assertEq(admin.balance, balance + 1 ether);
-        vm.stopPrank();
-
-        NativeTokenMgr(nativeWrap).setAdmin(admin, false);
     }
 
     function testCheckSetBurn() public {
@@ -183,25 +155,12 @@ contract BridgeTest is Test {
         vm.expectRevert("Amount too large");
         bridge.burnNative{value: 2.1 ether}(address(AToken), 10, 1111);
 
-        setZeroNativeWrap();
-        vm.expectRevert("Native wrap not set");
-        bridge.burnNative{value: 2 ether}(address(AToken), 10, 1111);
-
-        setNativeWrap();
         bridge.burnNative{value: 2 ether}(address(AToken), 10, 1111);
 
         vm.expectRevert("Record exists");
         bridge.burnNative{value: 2 ether}(address(AToken), 10, 1111);
 
-        assertEq(nativeWrap.balance, 2 ether);
-    }
-
-    function setZeroNativeWrap() internal {
-        bridge.setNativeWrap(address(0));
-    }
-
-    function setNativeWrap() internal {
-        bridge.setNativeWrap(nativeWrap);
+        assertEq(address(bridge).balance, 2 ether);
     }
 
     function sign(
@@ -300,11 +259,6 @@ contract BridgeTest is Test {
         bridge.mintToken(_reqs[0], _sigs[0]);
         bridge.unpause();
 
-        setZeroNativeWrap();
-        vm.expectRevert("Native wrap not set");
-        bridge.mintToken(_reqs[0], _sigs[0]);
-        setNativeWrap();
-
         vm.expectRevert("Invalid signature");
         bridge.mintToken(_reqs[1], hash2_);
 
@@ -317,7 +271,7 @@ contract BridgeTest is Test {
         assertEq(BToken.balanceOf(receiver), 2 ether - 0.1 ether);
         assertEq(BToken.balanceOf(FeeReceiver), 0.1 ether);
 
-        assertEq(address(nativeWrap).balance, 0 ether);
+        assertEq(address(bridge).balance, 0 ether);
         assertEq(address(FeeReceiver).balance, 0.1 ether);
         assertEq(address(receiver).balance, 2 ether - 0.1 ether);
     }
