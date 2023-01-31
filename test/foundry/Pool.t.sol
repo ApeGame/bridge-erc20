@@ -24,7 +24,7 @@ contract PoolTest is Test {
         bridge = new Bridge();
         bridge.initialize(address(0), PublicKey);
 
-        Token = new MyTokenMock();
+        Token = new MyTokenMock("Token", "TK");
 
         Token.mintTo(user, 10000 ether);
         vm.deal(user, 10000 ether);

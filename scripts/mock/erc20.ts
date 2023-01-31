@@ -3,17 +3,18 @@
 //
 // When running the script with `npx hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
-import { VerifyContract as VerifyContractBlockscout } from "../common-blockscout";
-import { VerifyContract as VerifyContractEthscan } from "../common-ethscan";
+import { VerifyContractBlockScout } from "../common-blockscout";
+import { VerifyContractEthScan } from "../common-ethscan";
 import { Sleep } from "../common";
 import { ethers, network } from "hardhat";
 
-
 async function main() {
   const mtFactory = await ethers.getContractFactory("MyTokenMock");
-  const mt = await mtFactory.deploy();
+  const mt = await mtFactory.deploy("Coq Chain Token", "COQ");
   console.log(`mock erc20 deployed: ${mt.address}`);
 
+  const args = mtFactory.interface.encodeDeploy(["Coq Chain Token", "COQ"]);
+  // console.log(args);
   // sleep 10s
   await Sleep(10000);
   switch (network.name) {
@@ -21,10 +22,10 @@ async function main() {
       console.log(
         `MyTokenMock(${
           mt.address
-        }) verify & push contract, guid: ${await VerifyContractBlockscout(
+        }) verify & push contract, guid: ${await VerifyContractBlockScout(
           mt.address,
           "contracts/mock/MyToken.sol:MyTokenMock",
-          "",
+          args.slice(2),
           "https://testnetscan.ankr.com/api"
         )}`
       );
@@ -33,10 +34,10 @@ async function main() {
       console.log(
         `MyToken(${
           mt.address
-        }) verify & push contract, guid: ${await VerifyContractEthscan(
+        }) verify & push contract, guid: ${await VerifyContractEthScan(
           mt.address,
           "contracts/mock/MyToken.sol:MyTokenMock",
-          "",
+          args,
           "https://api-testnet.bscscan.com/api",
           "Z86V9AC619GAGEYVWBP86CTGDDPSS4JS8R"
         )}`

@@ -30,8 +30,8 @@ contract BridgeTest is Test {
 
         bridge.initialize(FeeReceiver, PublicKey);
 
-        AToken = new MyTokenMock();
-        BToken = new MyTokenMock();
+        AToken = new MyTokenMock("AToken", "AToken");
+        BToken = new MyTokenMock("BToken", "BToken");
 
         AToken.mintTo(bridger, 10000 ether);
         BToken.mintTo(bridger, 10000 ether);

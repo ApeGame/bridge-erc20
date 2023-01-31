@@ -18,7 +18,7 @@ async function main() {
 
   // 1、 deploy erc20 token
   const mtFactory = await ethers.getContractFactory("MyTokenMock");
-  const mt = await mtFactory.deploy();
+  const mt = await mtFactory.deploy("My Token", "MYT");
   console.log(`mock erc20 deployed: ${mt.address}`);
 
   // 2、 mint to owner

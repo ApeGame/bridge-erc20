@@ -7,8 +7,8 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 contract MyTokenMock is ERC20Upgradeable, OwnableUpgradeable {
     address bridge;
 
-    constructor() initializer {
-        __ERC20_init("MyToken", "MTK");
+    constructor(string memory _name, string memory _symbol) initializer {
+        __ERC20_init(_name, _symbol);
         __Ownable_init();
     }
 
