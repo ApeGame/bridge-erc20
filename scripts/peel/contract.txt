@@ -1,0 +1,6 @@
+bridge:
+    bsc: 0xA27e024FA03421d86CD1Dbd48cFf7948B5EcCcbf
+    ape: 0x0880f9626ab5D65Ee791afaa5eDB20eEFCC15384
+
+erc20 <=> native token
+    peel(bsc): 0x734548a9e43d2d564600b1b2ed5be9c2b911c6ab
