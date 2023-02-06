@@ -11,41 +11,22 @@ abstract contract Verify is OwnableUpgradeable {
     function verify(bytes32 hashMessage, bytes memory _data)
         internal
         view
-        returns (bool)
+        returns (bool auth)
     {
-        bool auth;
-        bytes32 _r = bytes2bytes32(slice(_data, 0, 32));
-        bytes32 _s = bytes2bytes32(slice(_data, 32, 32));
-        bytes1 v = slice(_data, 64, 1)[0];
-        uint8 _v = uint8(v) + 27;
+        bytes32 r;
+        bytes32 s;
+        uint8 v;
+        assembly {
+            r := mload(add(_data, 0x20))
+            s := mload(add(_data, 0x40))
+            v := add(and(mload(add(_data, 0x41)), 0xff), 27)
+        }
 
-        address addr = ecrecover(hashMessage, _v, _r, _s);
+        address addr = ecrecover(hashMessage, v, r, s);
         if (publicKey == addr) {
             auth = true;
         }
         return auth;
-    }
-
-    function slice(
-        bytes memory data,
-        uint256 start,
-        uint256 len
-    ) internal pure returns (bytes memory) {
-        bytes memory b = new bytes(len);
-        for (uint256 i = 0; i < len; i++) {
-            b[i] = data[i + start];
-        }
-        return b;
-    }
-
-    function bytes2bytes32(bytes memory _source)
-        internal
-        pure
-        returns (bytes32 result)
-    {
-        assembly {
-            result := mload(add(_source, 32))
-        }
     }
 
     function setPublicKey(address _key) public onlyOwner {

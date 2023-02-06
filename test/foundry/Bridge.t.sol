@@ -128,6 +128,13 @@ contract BridgeTest is Test {
         assertEq(balance, 9998 ether);
     }
 
+    function testSetFeeReceiver() public {
+        bridge.setFeeReceiver(receiver);
+        assertEq(bridge.feeReceiver(), receiver);
+        bridge.setFeeReceiver(FeeReceiver);
+        assertEq(bridge.feeReceiver(), FeeReceiver);
+    }
+
     function testburnNative() public {
         bridge.pause();
         vm.expectRevert("Pausable: paused");

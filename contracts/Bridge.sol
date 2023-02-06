@@ -58,7 +58,9 @@ contract Bridge is Admin, Pause, Pool {
 
     /// @notice set fee receiver.
     function setFeeReceiver(address _feeReceiver) public onlyOwner {
-        feeReceiver = _feeReceiver;
+        assembly {
+            sstore(feeReceiver.slot, _feeReceiver)
+        }
     }
 
     /// @notice burn erc20 token to bridge
@@ -172,9 +174,12 @@ contract Bridge is Admin, Pause, Pool {
         onlyAdmin
     {
         require(_tokens.length == _amounts.length, "Length mismatch");
-        for (uint256 i = 0; i < _tokens.length; i++) {
+        for (uint256 i = 0; i < _tokens.length; ) {
             minBurn[_tokens[i]] = _amounts[i];
             emit MinBurnUpdated(_tokens[i], _amounts[i]);
+            unchecked {
+                i++;
+            }
         }
     }
 
@@ -184,9 +189,12 @@ contract Bridge is Admin, Pause, Pool {
         onlyAdmin
     {
         require(_tokens.length == _amounts.length, "Length mismatch");
-        for (uint256 i = 0; i < _tokens.length; i++) {
+        for (uint256 i = 0; i < _tokens.length; ) {
             maxBurn[_tokens[i]] = _amounts[i];
             emit MaxBurnUpdated(_tokens[i], _amounts[i]);
+            unchecked {
+                i++;
+            }
         }
     }
 
