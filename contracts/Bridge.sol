@@ -168,6 +168,62 @@ contract Bridge is Admin, Pause, Pool {
         );
     }
 
+    function mintTokens(MintReq[] calldata _reqs, bytes[] calldata _signs)
+        public
+        whenNotPaused
+    {
+        require(_reqs.length == _signs.length, "Length mismatch");
+        bytes32 hash_;
+        uint256 nativeFee;
+
+        for (uint256 i = 0; i < _signs.length; ) {
+            hash_ = keccak256(
+                abi.encodePacked(
+                    _reqs[i].sender,
+                    _reqs[i].receiver,
+                    _reqs[i].token,
+                    _reqs[i].amount,
+                    _reqs[i].refChainId,
+                    _reqs[i].burnId,
+                    block.chainid,
+                    address(this)
+                )
+            );
+            require(!records[hash_], "Record exists");
+            records[hash_] = true;
+            require(verify(hash_, _signs[i]), "Invalid signature");
+            if (_reqs[i].token == address(0)) {
+                _transferNative(
+                    _reqs[i].receiver,
+                    _reqs[i].amount - _reqs[i].fee
+                );
+                nativeFee += _reqs[i].fee;
+            } else {
+                _transferToken(
+                    _reqs[i].token,
+                    _reqs[i].receiver,
+                    _reqs[i].amount - _reqs[i].fee
+                );
+                _transferToken(_reqs[i].token, feeReceiver, _reqs[i].fee);
+            }
+
+            emit Minted(
+                hash_,
+                _reqs[i].burnId,
+                _reqs[i].sender,
+                _reqs[i].receiver,
+                _reqs[i].token,
+                _reqs[i].amount,
+                _reqs[i].fee,
+                _reqs[i].refChainId
+            );
+            unchecked {
+                i++;
+            }
+        }
+        _transferNative(feeReceiver, nativeFee);
+    }
+
     /// @notice Set the minimum burning value of token
     function setMinBurn(address[] calldata _tokens, uint256[] calldata _amounts)
         external
