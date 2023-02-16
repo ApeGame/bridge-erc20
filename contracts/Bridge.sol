@@ -168,60 +168,78 @@ contract Bridge is Admin, Pause, Pool {
         );
     }
 
-    function mintTokens(MintReq[] calldata _reqs, bytes[] calldata _signs)
-        public
-        whenNotPaused
-    {
-        require(_reqs.length == _signs.length, "Length mismatch");
+    /// @notice Batch mint token to receiver in target chain
+    /// @param _tokens All tokens that need to be transferred
+    /// @param _fees The amount of handling charges corresponding to tokens
+    function mintTokens(
+        MintReq[] calldata _reqs,
+        bytes[] calldata _signs,
+        address[] calldata _tokens,
+        uint256[] calldata _fees
+    ) public whenNotPaused {
+        require(_reqs.length == _signs.length, "Reqs length mismatch");
+        require(_tokens.length == _fees.length, "Fees length mismatch");
+
         bytes32 hash_;
-        uint256 nativeFee;
+        uint256 feeTotal_;
+        MintReq memory req_;
 
         for (uint256 i = 0; i < _signs.length; ) {
+            req_ = _reqs[i];
             hash_ = keccak256(
                 abi.encodePacked(
-                    _reqs[i].sender,
-                    _reqs[i].receiver,
-                    _reqs[i].token,
-                    _reqs[i].amount,
-                    _reqs[i].refChainId,
-                    _reqs[i].burnId,
+                    req_.sender,
+                    req_.receiver,
+                    req_.token,
+                    req_.amount,
+                    req_.refChainId,
+                    req_.burnId,
                     block.chainid,
                     address(this)
                 )
             );
             require(!records[hash_], "Record exists");
             records[hash_] = true;
+            feeTotal_ += req_.fee;
             require(verify(hash_, _signs[i]), "Invalid signature");
-            if (_reqs[i].token == address(0)) {
-                _transferNative(
-                    _reqs[i].receiver,
-                    _reqs[i].amount - _reqs[i].fee
-                );
-                nativeFee += _reqs[i].fee;
+            if (req_.token == address(0)) {
+                _transferNative(req_.receiver, req_.amount - req_.fee);
             } else {
                 _transferToken(
-                    _reqs[i].token,
-                    _reqs[i].receiver,
-                    _reqs[i].amount - _reqs[i].fee
+                    req_.token,
+                    req_.receiver,
+                    req_.amount - req_.fee
                 );
-                _transferToken(_reqs[i].token, feeReceiver, _reqs[i].fee);
             }
 
             emit Minted(
                 hash_,
-                _reqs[i].burnId,
-                _reqs[i].sender,
-                _reqs[i].receiver,
-                _reqs[i].token,
-                _reqs[i].amount,
-                _reqs[i].fee,
-                _reqs[i].refChainId
+                req_.burnId,
+                req_.sender,
+                req_.receiver,
+                req_.token,
+                req_.amount,
+                req_.fee,
+                req_.refChainId
             );
             unchecked {
                 i++;
             }
         }
-        _transferNative(feeReceiver, nativeFee);
+
+        uint256 recordFee_;
+        for (uint256 j = 0; j < _tokens.length; ) {
+            recordFee_ += _fees[j];
+            if (_tokens[j] == address(0)) {
+                _transferNative(feeReceiver, _fees[j]);
+            } else {
+                _transferToken(_tokens[j], feeReceiver, _fees[j]);
+            }
+            unchecked {
+                j++;
+            }
+        }
+        require(feeTotal_ == recordFee_, "Total fee is wrong");
     }
 
     /// @notice Set the minimum burning value of token
