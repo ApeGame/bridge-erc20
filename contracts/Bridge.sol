@@ -133,21 +133,29 @@ contract Bridge is Admin, Pause, Pool {
         public
         whenNotPaused
     {
-        bytes32 hash_ = keccak256(
-            abi.encodePacked(
-                _req.sender,
-                _req.receiver,
-                _req.token,
-                _req.amount,
-                _req.refChainId,
-                _req.burnId,
-                block.chainid,
-                address(this)
-            )
-        );
+        bytes32 hash_ = generateHash(_req);
+
         require(!records[hash_], "Record exists");
         records[hash_] = true;
-        require(verify(hash_, _sign), "Invalid signature");
+        require(
+            verify(
+                keccak256(
+                    abi.encodePacked(
+                        _req.sender,
+                        _req.receiver,
+                        _req.token,
+                        _req.amount,
+                        _req.fee,
+                        _req.refChainId,
+                        _req.burnId,
+                        block.chainid,
+                        address(this)
+                    )
+                ),
+                _sign
+            ),
+            "Invalid signature"
+        );
         if (_req.token == address(0)) {
             _transferNative(_req.receiver, _req.amount - _req.fee);
             _transferNative(feeReceiver, _req.fee);
@@ -186,22 +194,29 @@ contract Bridge is Admin, Pause, Pool {
 
         for (uint256 i = 0; i < _signs.length; ) {
             req_ = _reqs[i];
-            hash_ = keccak256(
-                abi.encodePacked(
-                    req_.sender,
-                    req_.receiver,
-                    req_.token,
-                    req_.amount,
-                    req_.refChainId,
-                    req_.burnId,
-                    block.chainid,
-                    address(this)
-                )
-            );
+            hash_ = generateHash(req_);
             require(!records[hash_], "Record exists");
             records[hash_] = true;
             feeTotal_ += req_.fee;
-            require(verify(hash_, _signs[i]), "Invalid signature");
+            require(
+                verify(
+                    keccak256(
+                        abi.encodePacked(
+                            req_.sender,
+                            req_.receiver,
+                            req_.token,
+                            req_.amount,
+                            req_.fee,
+                            req_.refChainId,
+                            req_.burnId,
+                            block.chainid,
+                            address(this)
+                        )
+                    ),
+                    _signs[i]
+                ),
+                "Invalid signature"
+            );
             if (req_.token == address(0)) {
                 _transferNative(req_.receiver, req_.amount - req_.fee);
             } else {
@@ -240,6 +255,22 @@ contract Bridge is Admin, Pause, Pool {
             }
         }
         require(feeTotal_ == recordFee_, "Total fee is wrong");
+    }
+
+    function generateHash(MintReq memory _req) public view returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(
+                    _req.sender,
+                    _req.receiver,
+                    _req.token,
+                    _req.amount,
+                    _req.refChainId,
+                    _req.burnId,
+                    block.chainid,
+                    address(this)
+                )
+            );
     }
 
     /// @notice Set the minimum burning value of token
