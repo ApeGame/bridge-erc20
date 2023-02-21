@@ -43,6 +43,19 @@ async function main() {
         )}`
       );
       break;
+    case "polygontest":
+      console.log(
+        `MyToken(${
+          mt.address
+        }) verify & push contract, guid: ${await VerifyContractEthScan(
+          mt.address,
+          "contracts/mock/MyToken.sol:MyTokenMock",
+          args.slice(2),
+          "https://api-testnet.polygonscan.com/api",
+          "AETMWJBB9WTFK95EE98W8D3JTBXWGX83SZ"
+        )}`
+      );
+      break;
   }
 }
 

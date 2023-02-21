@@ -1,6 +1,12 @@
 bridge:
     bsc: 0xA27e024FA03421d86CD1Dbd48cFf7948B5EcCcbf
-    ape: 0x0880f9626ab5D65Ee791afaa5eDB20eEFCC15384
+    ape: 0x0880f9626ab5D65Ee791afaa5eDB20eEFCC15384(old)
+    ape: 0x7dd5Fac4A970E84aC2f1975947ba91A11b201Dff (new)
 
 erc20 <=> native token
     peel(bsc): 0x734548a9e43d2d564600b1b2ed5be9c2b911c6ab
+
+
+proxy admin:
+    bsc: 0x7613e16ea0097A4d6f3823432C3694bBEF0cB7fD
+    ape: 0xdD1cA9E6731958855aCBded1611dE538d980df60
