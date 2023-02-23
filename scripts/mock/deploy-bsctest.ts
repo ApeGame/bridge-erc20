@@ -11,7 +11,7 @@ const baseUrl: string = "https://api-testnet.bscscan.com/api";
 const apikey: string = "Z86V9AC619GAGEYVWBP86CTGDDPSS4JS8R";
 
 const feeReceiver = "0x20cD8eB93c50BDAc35d6A526f499c0104958e3F6";
-const pubKey = "0xd6a5914E2b8676bD8Fd2fcD9c0fD1FCf1B5A9411";
+const pubKey = "0xdab136d1aacef7417d32ae6b8b13651dba4dd580";
 
 async function main() {
   const owner = (await ethers.getSigners())[0];
