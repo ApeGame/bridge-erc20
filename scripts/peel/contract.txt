@@ -2,9 +2,11 @@ bridge:
     bsc: 0xA27e024FA03421d86CD1Dbd48cFf7948B5EcCcbf
     ape: 0x0880f9626ab5D65Ee791afaa5eDB20eEFCC15384(old)
     ape: 0x7dd5Fac4A970E84aC2f1975947ba91A11b201Dff (new)
+    polygon: 0x401c4E84FCEE54E07fE0c5154cC3922c8d2c8892
 
 erc20 <=> native token
     peel(bsc): 0x734548a9e43d2d564600b1b2ed5be9c2b911c6ab
+    peel(polygon): 0x734548a9e43d2D564600b1B2ed5bE9C2b911c6aB
 
 
 proxy admin:
