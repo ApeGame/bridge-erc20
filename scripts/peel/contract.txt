@@ -12,3 +12,4 @@ erc20 <=> native token
 proxy admin:
     bsc: 0x7613e16ea0097A4d6f3823432C3694bBEF0cB7fD
     ape: 0xdD1cA9E6731958855aCBded1611dE538d980df60
+    polygon: 0xCD99a971689bc2f979926Dd92D0013234c23c1b6
