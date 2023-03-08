@@ -6,7 +6,7 @@ bridge:
 
 erc20 <=> native token
     peel(bsc): 0x734548a9e43d2d564600b1b2ed5be9c2b911c6ab
-    peel(polygon): 0x734548a9e43d2D564600b1B2ed5bE9C2b911c6aB
+    peel(polygon): 0x76dB25EEbc0E6Ac00A6F171B77e465ABe7c5276E
 
 
 proxy admin:
