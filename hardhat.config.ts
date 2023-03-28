@@ -75,7 +75,20 @@ const config: HardhatUserConfig = {
     currency: "USD",
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
+    apiKey: {
+      mainnet: process.env.ETHERSCAN_API_KEY,
+      polygontestzkevm: "QADPA8U7I9EU4K1I672Y9QHRAY7PFJ5WAX",
+    },
+    customChains: [
+      {
+        network: "polygontestzkevm",
+        chainId: 1442,
+        urls: {
+          apiURL: "https://api-testnet-zkevm.polygonscan.com/api",
+          browserURL: "https://testnet-zkevm.polygonscan.com/",
+        },
+      },
+    ]
   },
 };
 
