@@ -6,42 +6,25 @@
 import { VerifyContractBlockScout } from "../common-blockscout";
 import { VerifyContractEthScan } from "../common-ethscan";
 import { Sleep } from "../common";
-import { ethers, upgrades, network } from "hardhat";
+import { ethers, network } from "hardhat";
 
-let bridgeContract;
 async function main() {
-  switch (network.name) {
-    case "coq":
-      bridgeContract = "0x21a4813D3A13fD762d00FC3551D67553453c5c19";
-      break;
-    case "bsctest":
-      bridgeContract = "0xe494b08DFBd3254780b6171C9939582D8a98056d";
-      break;
-    default:
-      return;
-  }
-
   // 4、deploy bridge contract
   const BridgeFactory = await ethers.getContractFactory("Bridge");
+  const bridge = await BridgeFactory.deploy();
 
-  const newContract = await upgrades.upgradeProxy(
-    bridgeContract,
-    BridgeFactory
-  );
-  console.log(`upgrade bridge contract: ${newContract.address}`);
-
+  console.log(`bridge logic address: ${bridge.address}`);
   // sleep 10s
   await Sleep(10000);
 
-  const bridgeLogicContract = await upgrades.erc1967.getImplementationAddress(
-    newContract.address
-  );
-  if (network.name === "bsctest") {
-    const baseUrl: string = "https://api-testnet.bscscan.com/api";
+  if (network.name === "bsc") {
+    const baseUrl: string = "https://api.bscscan.com/api";
     const apikey: string = "Z86V9AC619GAGEYVWBP86CTGDDPSS4JS8R";
     console.log(
-      `bridge(${bridgeLogicContract}) verify & push contract, guid: ${await VerifyContractEthScan(
-        bridgeLogicContract,
+      `bridge(${
+        bridge.address
+      }) verify & push contract, guid: ${await VerifyContractEthScan(
+        bridge.address,
         "contracts/Bridge.sol:Bridge",
         "",
         baseUrl,
@@ -50,11 +33,13 @@ async function main() {
     );
   }
 
-  if (network.name === "coq") {
-    const baseUrl: string = "https://testnetscan.ankr.com/api";
+  if (network.name === "ape") {
+    const baseUrl: string = "https://explorer.bas.metaapesgame.com/api";
     console.log(
-      `bridge(${bridgeLogicContract}) verify & push contract, guid: ${await VerifyContractBlockScout(
-        bridgeLogicContract,
+      `bridge(${
+        bridge.address
+      }) verify & push contract, guid: ${await VerifyContractBlockScout(
+        bridge.address,
         "contracts/Bridge.sol:Bridge",
         "",
         baseUrl

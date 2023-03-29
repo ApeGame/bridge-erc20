@@ -58,7 +58,9 @@ contract Bridge is Admin, Pause, Pool {
 
     /// @notice set fee receiver.
     function setFeeReceiver(address _feeReceiver) public onlyOwner {
-        feeReceiver = _feeReceiver;
+        assembly {
+            sstore(feeReceiver.slot, _feeReceiver)
+        }
     }
 
     /// @notice burn erc20 token to bridge
@@ -131,21 +133,29 @@ contract Bridge is Admin, Pause, Pool {
         public
         whenNotPaused
     {
-        bytes32 hash_ = keccak256(
-            abi.encodePacked(
-                _req.sender,
-                _req.receiver,
-                _req.token,
-                _req.amount,
-                _req.refChainId,
-                _req.burnId,
-                block.chainid,
-                address(this)
-            )
-        );
+        bytes32 hash_ = generateHash(_req);
+
         require(!records[hash_], "Record exists");
         records[hash_] = true;
-        require(verify(hash_, _sign), "Invalid signature");
+        require(
+            verify(
+                keccak256(
+                    abi.encodePacked(
+                        _req.sender,
+                        _req.receiver,
+                        _req.token,
+                        _req.amount,
+                        _req.fee,
+                        _req.refChainId,
+                        _req.burnId,
+                        block.chainid,
+                        address(this)
+                    )
+                ),
+                _sign
+            ),
+            "Invalid signature"
+        );
         if (_req.token == address(0)) {
             _transferNative(_req.receiver, _req.amount - _req.fee);
             _transferNative(feeReceiver, _req.fee);
@@ -166,15 +176,115 @@ contract Bridge is Admin, Pause, Pool {
         );
     }
 
+    /// @notice Batch mint token to receiver in target chain
+    /// @param _tokens All tokens that need to be transferred
+    /// @param _fees The amount of handling charges corresponding to tokens
+    function mintTokens(
+        MintReq[] calldata _reqs,
+        bytes[] calldata _signs,
+        address[] calldata _tokens,
+        uint256[] calldata _fees
+    ) public whenNotPaused {
+        require(_reqs.length == _signs.length, "Reqs length mismatch");
+        require(_tokens.length == _fees.length, "Fees length mismatch");
+
+        bytes32 hash_;
+        uint256 feeTotal_;
+        MintReq memory req_;
+
+        for (uint256 i = 0; i < _signs.length; ) {
+            req_ = _reqs[i];
+            hash_ = generateHash(req_);
+            require(!records[hash_], "Record exists");
+            records[hash_] = true;
+            feeTotal_ += req_.fee;
+            require(
+                verify(
+                    keccak256(
+                        abi.encodePacked(
+                            req_.sender,
+                            req_.receiver,
+                            req_.token,
+                            req_.amount,
+                            req_.fee,
+                            req_.refChainId,
+                            req_.burnId,
+                            block.chainid,
+                            address(this)
+                        )
+                    ),
+                    _signs[i]
+                ),
+                "Invalid signature"
+            );
+            if (req_.token == address(0)) {
+                _transferNative(req_.receiver, req_.amount - req_.fee);
+            } else {
+                _transferToken(
+                    req_.token,
+                    req_.receiver,
+                    req_.amount - req_.fee
+                );
+            }
+
+            emit Minted(
+                hash_,
+                req_.burnId,
+                req_.sender,
+                req_.receiver,
+                req_.token,
+                req_.amount,
+                req_.fee,
+                req_.refChainId
+            );
+            unchecked {
+                i++;
+            }
+        }
+
+        uint256 recordFee_;
+        for (uint256 j = 0; j < _tokens.length; ) {
+            recordFee_ += _fees[j];
+            if (_tokens[j] == address(0)) {
+                _transferNative(feeReceiver, _fees[j]);
+            } else {
+                _transferToken(_tokens[j], feeReceiver, _fees[j]);
+            }
+            unchecked {
+                j++;
+            }
+        }
+        require(feeTotal_ == recordFee_, "Total fee is wrong");
+    }
+
+    function generateHash(MintReq memory _req) public view returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(
+                    _req.sender,
+                    _req.receiver,
+                    _req.token,
+                    _req.amount,
+                    _req.refChainId,
+                    _req.burnId,
+                    block.chainid,
+                    address(this)
+                )
+            );
+    }
+
     /// @notice Set the minimum burning value of token
     function setMinBurn(address[] calldata _tokens, uint256[] calldata _amounts)
         external
         onlyAdmin
     {
         require(_tokens.length == _amounts.length, "Length mismatch");
-        for (uint256 i = 0; i < _tokens.length; i++) {
+        for (uint256 i = 0; i < _tokens.length; ) {
             minBurn[_tokens[i]] = _amounts[i];
             emit MinBurnUpdated(_tokens[i], _amounts[i]);
+            unchecked {
+                i++;
+            }
         }
     }
 
@@ -184,9 +294,12 @@ contract Bridge is Admin, Pause, Pool {
         onlyAdmin
     {
         require(_tokens.length == _amounts.length, "Length mismatch");
-        for (uint256 i = 0; i < _tokens.length; i++) {
+        for (uint256 i = 0; i < _tokens.length; ) {
             maxBurn[_tokens[i]] = _amounts[i];
             emit MaxBurnUpdated(_tokens[i], _amounts[i]);
+            unchecked {
+                i++;
+            }
         }
     }
 

@@ -128,6 +128,13 @@ contract BridgeTest is Test {
         assertEq(balance, 9998 ether);
     }
 
+    function testSetFeeReceiver() public {
+        bridge.setFeeReceiver(receiver);
+        assertEq(bridge.feeReceiver(), receiver);
+        bridge.setFeeReceiver(FeeReceiver);
+        assertEq(bridge.feeReceiver(), FeeReceiver);
+    }
+
     function testburnNative() public {
         bridge.pause();
         vm.expectRevert("Pausable: paused");
@@ -168,6 +175,7 @@ contract BridgeTest is Test {
         address _receiver,
         address _token,
         uint256 _amount,
+        uint256 _fee,
         uint256 _redChainId,
         bytes32 _burnId,
         uint256 _chainId,
@@ -179,6 +187,7 @@ contract BridgeTest is Test {
                 _receiver,
                 _token,
                 _amount,
+                _fee,
                 _redChainId,
                 _burnId,
                 _chainId,
@@ -192,7 +201,7 @@ contract BridgeTest is Test {
     function addLiquidity() internal {
         vm.startPrank(bridger);
         BToken.approve(address(bridge), 100 ether);
-        bridge.addLiquidity(address(BToken), 2 ether);
+        bridge.addLiquidity(address(BToken), 10 ether);
 
         bridge.addNativeLiquidity{value: 2 ether}();
         vm.stopPrank();
@@ -228,6 +237,7 @@ contract BridgeTest is Test {
             receiver,
             address(BToken),
             2 ether,
+            0.1 ether,
             11,
             bytes32("aa1231ab"),
             block.chainid,
@@ -238,6 +248,7 @@ contract BridgeTest is Test {
             receiver,
             address(0),
             2 ether,
+            0.1 ether,
             11,
             bytes32("aa1231ab111"),
             block.chainid,
@@ -248,6 +259,7 @@ contract BridgeTest is Test {
             receiver,
             address(1),
             2 ether,
+            0.1 ether,
             11,
             bytes32("aa1231ab111"),
             block.chainid,
@@ -270,6 +282,209 @@ contract BridgeTest is Test {
 
         assertEq(BToken.balanceOf(receiver), 2 ether - 0.1 ether);
         assertEq(BToken.balanceOf(FeeReceiver), 0.1 ether);
+
+        assertEq(address(bridge).balance, 0 ether);
+        assertEq(address(FeeReceiver).balance, 0.1 ether);
+        assertEq(address(receiver).balance, 2 ether - 0.1 ether);
+    }
+
+    // function testMintTokens1() public {
+    //     addLiquidity();
+    //     Bridge.MintReq[] memory _reqs = new Bridge.MintReq[](3);
+    //     _reqs[0] = Bridge.MintReq({
+    //         sender: bridger,
+    //         receiver: receiver,
+    //         token: address(BToken),
+    //         amount: 2 ether,
+    //         fee: 0.1 ether,
+    //         refChainId: 11,
+    //         burnId: bytes32("aa1231ab")
+    //     });
+
+    //     _reqs[1] = Bridge.MintReq({
+    //         sender: bridger,
+    //         receiver: receiver,
+    //         token: address(0),
+    //         amount: 2 ether,
+    //         fee: 0.1 ether,
+    //         refChainId: 11,
+    //         burnId: bytes32("aa1231ab111")
+    //     });
+
+    //     _reqs[2] = Bridge.MintReq({
+    //         sender: bridger,
+    //         receiver: receiver,
+    //         token: address(BToken),
+    //         amount: 2 ether,
+    //         fee: 0.1 ether,
+    //         refChainId: 11,
+    //         burnId: bytes32("1111aa1231ab111")
+    //     });
+    //     bytes[] memory _sigs = new bytes[](3);
+
+    //     _sigs[0] = sign(
+    //         bridger,
+    //         receiver,
+    //         address(BToken),
+    //         2 ether,
+    //         11,
+    //         bytes32("aa1231ab"),
+    //         block.chainid,
+    //         address(bridge)
+    //     );
+
+    //     _sigs[2] = sign(
+    //         bridger,
+    //         receiver,
+    //         address(BToken),
+    //         2 ether,
+    //         11,
+    //         bytes32("1111aa1231ab111"),
+    //         block.chainid,
+    //         address(bridge)
+    //     );
+
+    //     bridge.pause();
+    //     vm.expectRevert("Pausable: paused");
+    //     bridge.mintTokens1(_reqs, _sigs);
+    //     bridge.unpause();
+    //     _sigs[1] = sign(
+    //         bridger,
+    //         receiver,
+    //         address(1),
+    //         2 ether,
+    //         11,
+    //         bytes32("aa1231ab111"),
+    //         block.chainid,
+    //         address(bridge)
+    //     );
+    //     vm.expectRevert("Invalid signature");
+    //     bridge.mintTokens1(_reqs, _sigs);
+
+    //     _sigs[1] = sign(
+    //         bridger,
+    //         receiver,
+    //         address(0),
+    //         2 ether,
+    //         11,
+    //         bytes32("aa1231ab111"),
+    //         block.chainid,
+    //         address(bridge)
+    //     );
+    //     bridge.mintTokens1(_reqs, _sigs);
+
+    //     vm.expectRevert("Record exists");
+    //     bridge.mintTokens1(_reqs, _sigs);
+
+    //     assertEq(BToken.balanceOf(receiver), 4 ether - 0.2 ether);
+    //     assertEq(BToken.balanceOf(FeeReceiver), 0.2 ether);
+
+    //     assertEq(address(bridge).balance, 0 ether);
+    //     assertEq(address(FeeReceiver).balance, 0.1 ether);
+    //     assertEq(address(receiver).balance, 2 ether - 0.1 ether);
+    // }
+
+    function testMintTokens() public {
+        addLiquidity();
+        Bridge.MintReq[] memory _reqs = new Bridge.MintReq[](3);
+        _reqs[0] = Bridge.MintReq({
+            sender: bridger,
+            receiver: receiver,
+            token: address(BToken),
+            amount: 2 ether,
+            fee: 0.1 ether,
+            refChainId: 11,
+            burnId: bytes32("aa1231ab")
+        });
+
+        _reqs[1] = Bridge.MintReq({
+            sender: bridger,
+            receiver: receiver,
+            token: address(0),
+            amount: 2 ether,
+            fee: 0.1 ether,
+            refChainId: 11,
+            burnId: bytes32("aa1231ab111")
+        });
+
+        _reqs[2] = Bridge.MintReq({
+            sender: bridger,
+            receiver: receiver,
+            token: address(BToken),
+            amount: 2 ether,
+            fee: 0.1 ether,
+            refChainId: 11,
+            burnId: bytes32("1111aa1231ab111")
+        });
+        bytes[] memory _sigs = new bytes[](3);
+
+        _sigs[0] = sign(
+            bridger,
+            receiver,
+            address(BToken),
+            2 ether,
+            0.1 ether,
+            11,
+            bytes32("aa1231ab"),
+            block.chainid,
+            address(bridge)
+        );
+
+        _sigs[2] = sign(
+            bridger,
+            receiver,
+            address(BToken),
+            2 ether,
+            0.1 ether,
+            11,
+            bytes32("1111aa1231ab111"),
+            block.chainid,
+            address(bridge)
+        );
+
+        address[] memory _tokens = new address[](2);
+        _tokens[0] = address(BToken);
+        _tokens[1] = address(0);
+        uint256[] memory _fees = new uint256[](2);
+        _fees[0] = 0.2 ether;
+        _fees[1] = 0.1 ether;
+
+        bridge.pause();
+        vm.expectRevert("Pausable: paused");
+        bridge.mintTokens(_reqs, _sigs, _tokens, _fees);
+        bridge.unpause();
+        _sigs[1] = sign(
+            bridger,
+            receiver,
+            address(1),
+            2 ether,
+            0.1 ether,
+            11,
+            bytes32("aa1231ab111"),
+            block.chainid,
+            address(bridge)
+        );
+        vm.expectRevert("Invalid signature");
+        bridge.mintTokens(_reqs, _sigs, _tokens, _fees);
+
+        _sigs[1] = sign(
+            bridger,
+            receiver,
+            address(0),
+            2 ether,
+            0.1 ether,
+            11,
+            bytes32("aa1231ab111"),
+            block.chainid,
+            address(bridge)
+        );
+        bridge.mintTokens(_reqs, _sigs, _tokens, _fees);
+
+        vm.expectRevert("Record exists");
+        bridge.mintTokens(_reqs, _sigs, _tokens, _fees);
+
+        assertEq(BToken.balanceOf(receiver), 4 ether - 0.2 ether);
+        assertEq(BToken.balanceOf(FeeReceiver), 0.2 ether);
 
         assertEq(address(bridge).balance, 0 ether);
         assertEq(address(FeeReceiver).balance, 0.1 ether);

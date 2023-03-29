@@ -37,12 +37,12 @@ const config: HardhatUserConfig = {
     bsctest: {
       url: process.env.BSC_TEST_URL || "",
       accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+        process.env.PRIVATE_KEY_TEST !== undefined ? [process.env.PRIVATE_KEY_TEST] : [],
     },
     coq: {
       url: process.env.COQ_URL || "",
       accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+        process.env.PRIVATE_KEY_TEST !== undefined ? [process.env.PRIVATE_KEY_TEST] : [],
     },
     bsc: {
       url: process.env.BSC_MAIN_URL || "",
@@ -54,13 +54,41 @@ const config: HardhatUserConfig = {
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
+    polygon: {
+      url: process.env.POLYGON_MAIN_URL || "",
+      accounts:
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
+    polygontest: {
+      url: process.env.POLYGON_TEST_URL || "",
+      accounts:
+        process.env.PRIVATE_KEY_TEST !== undefined ? [process.env.PRIVATE_KEY_TEST] : [],
+    },
+    polygontestzkevm: {
+      url: process.env.POLYGON_TEST_ZKEVM_URL || "",
+      accounts:
+        process.env.PRIVATE_KEY_TEST !== undefined ? [process.env.PRIVATE_KEY_TEST] : [],
+    },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
     currency: "USD",
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
+    apiKey: {
+      mainnet: process.env.ETHERSCAN_API_KEY,
+      polygontestzkevm: "QADPA8U7I9EU4K1I672Y9QHRAY7PFJ5WAX",
+    },
+    customChains: [
+      {
+        network: "polygontestzkevm",
+        chainId: 1442,
+        urls: {
+          apiURL: "https://api-testnet-zkevm.polygonscan.com/api",
+          browserURL: "https://testnet-zkevm.polygonscan.com/",
+        },
+      },
+    ]
   },
 };
 

@@ -7,24 +7,16 @@ import { VerifyContractEthScan, VerifyProxyEthScan } from "../common-ethscan";
 import { Sleep } from "../common";
 import { ethers, upgrades } from "hardhat";
 
-const baseUrl: string = "https://api-testnet.bscscan.com/api";
-const apikey: string = "Z86V9AC619GAGEYVWBP86CTGDDPSS4JS8R";
+const baseUrl: string = "https://api.polygonscan.com/api";
+const apikey: string = "AETMWJBB9WTFK95EE98W8D3JTBXWGX83SZ";
 
-const feeReceiver = "0x20cD8eB93c50BDAc35d6A526f499c0104958e3F6";
-const pubKey = "0xdab136d1aacef7417d32ae6b8b13651dba4dd580";
+const peelContract: string = "0x734548a9e43d2D564600b1B2ed5bE9C2b911c6aB";
+const pubKey = "0x76dB25EEbc0E6Ac00A6F171B77e465ABe7c5276E";
 
 async function main() {
-  const owner = (await ethers.getSigners())[0];
+  const feeReceiver = (await ethers.getSigners())[0].address;
 
-  // 1、 deploy erc20 token
-  const mtFactory = await ethers.getContractFactory("MyTokenMock");
-  const mt = await mtFactory.deploy("My Token", "MYT");
-  console.log(`mock erc20 deployed: ${mt.address}`);
-
-  // 2、 mint to owner
-  mt.mintTo(owner.address, ethers.utils.parseEther("10000"));
-
-  // 3、deploy bridge contract
+  // 2、deploy bridge contract
   const BridgeFactory = await ethers.getContractFactory("Bridge");
   const BridgeProxy = await upgrades.deployProxy(
     BridgeFactory,
@@ -36,43 +28,33 @@ async function main() {
   await BridgeProxy.deployed();
   console.log(`bridge deployed: ${BridgeProxy.address}`);
 
+
   // 4、set min max burn
   let tx = await BridgeProxy.setMinBurn(
-    [mt.address],
-    [ethers.utils.parseEther("0.1")]
+    [peelContract],
+    [ethers.utils.parseEther("20")]
   );
   await tx.wait();
 
   tx = await BridgeProxy.setMaxBurn(
-    [mt.address],
-    [ethers.utils.parseEther("100")]
+    [peelContract],
+    [ethers.utils.parseEther("1000")]
   );
   await tx.wait();
 
   // 5、add liquidity
-  tx = await mt.approve(BridgeProxy.address, ethers.utils.parseEther("9000"));
-  await tx.wait();
-  tx = await BridgeProxy.addLiquidity(
-    mt.address,
-    ethers.utils.parseEther("9000")
-  );
-  await tx.wait();
+  // tx = await mt.approve(BridgeProxy.address, ethers.utils.parseEther("200000"));
+  // await tx.wait();
+  // tx = await BridgeProxy.addLiquidity(
+  //   mt.address,
+  //   ethers.utils.parseEther("200000")
+  // );
+  // await tx.wait();
 
   // sleep 10s
   await Sleep(10000);
 
   // 6、 verify contract
-  console.log(
-    `MyTokenMock(${
-      mt.address
-    }) verify & push contract, guid: ${await VerifyContractEthScan(
-      mt.address,
-      "contracts/mock/MyToken.sol:MyTokenMock",
-      "",
-      baseUrl,
-      apikey
-    )}`
-  );
 
   const bridgeLogicContract = await upgrades.erc1967.getImplementationAddress(
     BridgeProxy.address
