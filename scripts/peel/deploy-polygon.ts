@@ -10,8 +10,8 @@ import { ethers, upgrades } from "hardhat";
 const baseUrl: string = "https://api.polygonscan.com/api";
 const apikey: string = "AETMWJBB9WTFK95EE98W8D3JTBXWGX83SZ";
 
-const peelContract: string = "0x734548a9e43d2D564600b1B2ed5bE9C2b911c6aB";
-const pubKey = "0x76dB25EEbc0E6Ac00A6F171B77e465ABe7c5276E";
+const peelContract: string = "0x76dB25EEbc0E6Ac00A6F171B77e465ABe7c5276E";
+const pubKey = "0x5767A8EdE4d14595162920C4019a5e79D685FF67";
 
 async function main() {
   const feeReceiver = (await ethers.getSigners())[0].address;
