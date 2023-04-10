@@ -10,7 +10,7 @@ import { ethers, network } from "hardhat";
 
 async function main() {
   const mtFactory = await ethers.getContractFactory("MyTokenMock");
-  const mt = await mtFactory.deploy("Coq Chain Token", "COQ");
+  const mt = await mtFactory.deploy("AAAAA", "A5");
   console.log(`mock erc20 deployed: ${mt.address}`);
 
   const args = mtFactory.interface.encodeDeploy(["Coq Chain Token", "COQ"]);
@@ -53,6 +53,19 @@ async function main() {
           args.slice(2),
           "https://api-testnet.polygonscan.com/api",
           "AETMWJBB9WTFK95EE98W8D3JTBXWGX83SZ"
+        )}`
+      );
+      break;
+    case "goerli":
+      console.log(
+        `MyToken(${
+          mt.address
+        }) verify & push contract, guid: ${await VerifyContractEthScan(
+          mt.address,
+          "contracts/mock/MyToken.sol:MyTokenMock",
+          args.slice(2),
+          "https://api-goerli.etherscan.io/api",
+          "ASQ5WCMDEBHF6XZI5R9UFM39WERSB3KSS6"
         )}`
       );
       break;

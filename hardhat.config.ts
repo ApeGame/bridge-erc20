@@ -37,12 +37,16 @@ const config: HardhatUserConfig = {
     bsctest: {
       url: process.env.BSC_TEST_URL || "",
       accounts:
-        process.env.PRIVATE_KEY_TEST !== undefined ? [process.env.PRIVATE_KEY_TEST] : [],
+        process.env.PRIVATE_KEY_TEST !== undefined
+          ? [process.env.PRIVATE_KEY_TEST]
+          : [],
     },
     coq: {
       url: process.env.COQ_URL || "",
       accounts:
-        process.env.PRIVATE_KEY_TEST !== undefined ? [process.env.PRIVATE_KEY_TEST] : [],
+        process.env.PRIVATE_KEY_TEST !== undefined
+          ? [process.env.PRIVATE_KEY_TEST]
+          : [],
     },
     bsc: {
       url: process.env.BSC_MAIN_URL || "",
@@ -62,12 +66,28 @@ const config: HardhatUserConfig = {
     polygontest: {
       url: process.env.POLYGON_TEST_URL || "",
       accounts:
-        process.env.PRIVATE_KEY_TEST !== undefined ? [process.env.PRIVATE_KEY_TEST] : [],
+        process.env.PRIVATE_KEY_TEST !== undefined
+          ? [process.env.PRIVATE_KEY_TEST]
+          : [],
     },
     polygontestzkevm: {
       url: process.env.POLYGON_TEST_ZKEVM_URL || "",
       accounts:
-        process.env.PRIVATE_KEY_TEST !== undefined ? [process.env.PRIVATE_KEY_TEST] : [],
+        process.env.PRIVATE_KEY_TEST !== undefined
+          ? [process.env.PRIVATE_KEY_TEST]
+          : [],
+    },
+    goerli: {
+      url: "https://rpc.ankr.com/eth_goerli",
+      accounts:
+        process.env.PRIVATE_KEY_TEST !== undefined
+          ? [process.env.PRIVATE_KEY_TEST]
+          : [],
+    },
+    eth: {
+      url: "https://rpc.ankr.com/eth",
+      accounts:
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
   },
   gasReporter: {
@@ -76,7 +96,8 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: {
-      mainnet: process.env.ETHERSCAN_API_KEY,
+      mainnet: "ASQ5WCMDEBHF6XZI5R9UFM39WERSB3KSS6",
+      goerli: "ASQ5WCMDEBHF6XZI5R9UFM39WERSB3KSS6",
       polygontestzkevm: "QADPA8U7I9EU4K1I672Y9QHRAY7PFJ5WAX",
     },
     customChains: [
@@ -88,7 +109,7 @@ const config: HardhatUserConfig = {
           browserURL: "https://testnet-zkevm.polygonscan.com/",
         },
       },
-    ]
+    ],
   },
 };
 

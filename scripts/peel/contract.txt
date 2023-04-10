@@ -3,11 +3,13 @@ bridge:
     ape: 0x0880f9626ab5D65Ee791afaa5eDB20eEFCC15384(old)
     ape: 0x7dd5Fac4A970E84aC2f1975947ba91A11b201Dff (new)
     polygon: 0x401c4E84FCEE54E07fE0c5154cC3922c8d2c8892
+    eth: 
 
 erc20 <=> native token
     peel(bsc): 0x734548a9e43d2d564600b1b2ed5be9c2b911c6ab
     peel(polygon): 0x76dB25EEbc0E6Ac00A6F171B77e465ABe7c5276E
-
+    peel(eth): 0x1ed81e03d7ddb67a21755d02ed2f24da71c27c55
+    peel(polygon zkemv): 
 
 proxy admin:
     bsc: 0x7613e16ea0097A4d6f3823432C3694bBEF0cB7fD
