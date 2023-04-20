@@ -17,6 +17,12 @@ async function main() {
     case "bsctest":
       bridgeContract = "0xe494b08DFBd3254780b6171C9939582D8a98056d";
       break;
+    case "polygontest":
+      bridgeContract = "0x083DDdD02835385A239b710648f33781B15Cc3C0";
+      break;
+    case "goerli":
+      bridgeContract = "0x07dF725eEa755E35aC85281eFDC884c33969e23f";
+      break;
     default:
       return;
   }
@@ -39,6 +45,34 @@ async function main() {
   if (network.name === "bsctest") {
     const baseUrl: string = "https://api-testnet.bscscan.com/api";
     const apikey: string = "Z86V9AC619GAGEYVWBP86CTGDDPSS4JS8R";
+    console.log(
+      `bridge(${bridgeLogicContract}) verify & push contract, guid: ${await VerifyContractEthScan(
+        bridgeLogicContract,
+        "contracts/Bridge.sol:Bridge",
+        "",
+        baseUrl,
+        apikey
+      )}`
+    );
+  }
+
+  if (network.name === "polygontest") {
+    const baseUrl: string = "https://api-testnet.polygonscan.com/api";
+    const apikey: string = "AETMWJBB9WTFK95EE98W8D3JTBXWGX83SZ";
+    console.log(
+      `bridge(${bridgeLogicContract}) verify & push contract, guid: ${await VerifyContractEthScan(
+        bridgeLogicContract,
+        "contracts/Bridge.sol:Bridge",
+        "",
+        baseUrl,
+        apikey
+      )}`
+    );
+  }
+
+  if (network.name === "goerli") {
+    const baseUrl: string = "https://api-goerli.etherscan.io/api";
+    const apikey: string = "ASQ5WCMDEBHF6XZI5R9UFM39WERSB3KSS6";
     console.log(
       `bridge(${bridgeLogicContract}) verify & push contract, guid: ${await VerifyContractEthScan(
         bridgeLogicContract,

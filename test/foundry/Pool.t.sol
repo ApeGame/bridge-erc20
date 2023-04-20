@@ -110,11 +110,89 @@ contract PoolTest is Test {
         vm.stopPrank();
     }
 
+    function testRevokePartLiquidity() public {
+        testAddLiquidity();
+
+        bridge.pause();
+        vm.expectRevert("Pausable: paused");
+        bridge.revokePartLiquidity(
+            address(Token),
+            withdraw,
+            1,
+            sign(address(Token), withdraw, 1)
+        );
+        bridge.unpause();
+
+        vm.startPrank(user);
+        vm.expectRevert("Invalid signature");
+        bridge.revokePartLiquidity(
+            address(Token),
+            withdraw,
+            1,
+            sign(address(11), withdraw, 1)
+        );
+
+        bridge.revokePartLiquidity(
+            address(Token),
+            withdraw,
+            1 ether,
+            sign(address(Token), withdraw, 1 ether)
+        );
+
+        vm.expectRevert("Used signature");
+        bridge.revokePartLiquidity(
+            address(Token),
+            withdraw,
+            1 ether,
+            sign(address(Token), withdraw, 1 ether)
+        );
+
+        assertEq(Token.balanceOf(address(bridge)), 99 ether);
+        assertEq(Token.balanceOf(withdraw), 1 ether);
+
+        bridge.revokePartLiquidity(
+            address(Token),
+            withdraw,
+            99 ether,
+            sign(address(Token), withdraw, 99 ether)
+        );
+        assertEq(Token.balanceOf(address(bridge)), 0 ether);
+        assertEq(Token.balanceOf(withdraw), 100 ether);
+
+        bridge.revokePartLiquidity(
+            address(0),
+            withdraw,
+            1 ether,
+            sign(address(0), withdraw, 1 ether)
+        );
+        assertEq(withdraw.balance, 1 ether);
+        assertEq(address(bridge).balance, 99 ether);
+        vm.stopPrank();
+    }
+
     function sign(address _token, address _to) internal returns (bytes memory) {
         bytes32 hash_ = keccak256(
             abi.encodePacked(
                 _token,
                 _to,
+                uint64(block.chainid),
+                address(bridge)
+            )
+        );
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(PublicKeyPrivateKey, hash_);
+        return abi.encode(r, s, bytes1(v - 27));
+    }
+
+    function sign(
+        address _token,
+        address _to,
+        uint256 amount
+    ) internal returns (bytes memory) {
+        bytes32 hash_ = keccak256(
+            abi.encodePacked(
+                _token,
+                _to,
+                amount,
                 uint64(block.chainid),
                 address(bridge)
             )

@@ -77,6 +77,7 @@ contract Pool is Initializable, Pause, Verify {
         );
         require(verify(hash_, _sign), "Invalid signature");
         require(!recordsSign[hash_], "Used signature");
+        recordsSign[hash_] = true;
 
         uint256 amount_;
         if (_token == address(0)) {
@@ -107,7 +108,57 @@ contract Pool is Initializable, Pause, Verify {
                 );
             }
         }
+    }
+
+    /// @notice revoke the part liquidity of erc20 token or native token
+    /// @param _token erc20 token, if _token == adress(0), revoke the liquidity of native token
+    /// @param _to After revoke liquidity, the amount in the liquidity pool will be transferred to '_to'
+    /// @param _amount Withdrawal amount
+    /// @param _sign sign data
+    /// @dev if _token == address(0), revoke the liquidity of native token; else revoke the liquidity of erc20 token;
+    function revokePartLiquidity(
+        address _token,
+        address _to,
+        uint256 _amount,
+        bytes calldata _sign
+    ) external whenNotPaused {
+        bytes32 hash_ = keccak256(
+            abi.encodePacked(
+                _token,
+                _to,
+                _amount,
+                uint64(block.chainid),
+                address(this)
+            )
+        );
+        require(verify(hash_, _sign), "Invalid signature");
+        require(!recordsSign[hash_], "Used signature");
         recordsSign[hash_] = true;
+
+        if (_token == address(0)) {
+            if (address(this).balance > 0) {
+                payable(_to).transfer(_amount);
+                emit LiquidityRevoked(
+                    msg.sender,
+                    TokenType.NATIVE,
+                    address(0),
+                    _to,
+                    _amount
+                );
+            }
+        } else {
+            require(
+                IERC20Upgradeable(_token).transfer(_to, _amount),
+                "transfer failed"
+            );
+            emit LiquidityRevoked(
+                msg.sender,
+                TokenType.ERC20,
+                _token,
+                _to,
+                _amount
+            );
+        }
     }
 
     /// @notice transfer '_amount' from '_from' to this contract in '_token'
