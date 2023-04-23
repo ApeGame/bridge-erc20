@@ -46,6 +46,38 @@ async function main() {
       )}`
     );
   }
+
+  if (network.name === "polygon") {
+    const baseUrl: string = "https://api.polygonscan.com/api";
+    const apikey: string = "AETMWJBB9WTFK95EE98W8D3JTBXWGX83SZ";
+    console.log(
+      `bridge(${
+        bridge.address
+      }) verify & push contract, guid: ${await VerifyContractEthScan(
+        bridge.address,
+        "contracts/Bridge.sol:Bridge",
+        "",
+        baseUrl,
+        apikey
+      )}`
+    );
+  }
+
+  if (network.name === "eth") {
+    const baseUrl: string = "https://api.etherscan.io/api";
+    const apikey: string = "ASQ5WCMDEBHF6XZI5R9UFM39WERSB3KSS6";
+    console.log(
+      `bridge(${
+        bridge.address
+      }) verify & push contract, guid: ${await VerifyContractEthScan(
+        bridge.address,
+        "contracts/Bridge.sol:Bridge",
+        "",
+        baseUrl,
+        apikey
+      )}`
+    );
+  }
 }
 
 // We recommend this pattern to be able to use async/await everywhere

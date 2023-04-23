@@ -98,6 +98,7 @@ const config: HardhatUserConfig = {
     apiKey: {
       mainnet: "ASQ5WCMDEBHF6XZI5R9UFM39WERSB3KSS6",
       goerli: "ASQ5WCMDEBHF6XZI5R9UFM39WERSB3KSS6",
+      polygon: "AETMWJBB9WTFK95EE98W8D3JTBXWGX83SZ",
       polygontestzkevm: "QADPA8U7I9EU4K1I672Y9QHRAY7PFJ5WAX",
     },
     customChains: [
