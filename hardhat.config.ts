@@ -78,6 +78,7 @@ const config: HardhatUserConfig = {
     apiKey: {
       mainnet: process.env.ETHERSCAN_API_KEY,
       polygontestzkevm: "QADPA8U7I9EU4K1I672Y9QHRAY7PFJ5WAX",
+      ape: "QADPA8U7I9EU4K1I672Y9QHRAY7PFJ5WAX",
     },
     customChains: [
       {
@@ -86,6 +87,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://api-testnet-zkevm.polygonscan.com/api",
           browserURL: "https://testnet-zkevm.polygonscan.com/",
+        },
+      },
+      {
+        network: "ape",
+        chainId: 16350,
+        urls: {
+          apiURL: "https://explorer.bas.metaapesgame.com/api",
+          browserURL: "https://explorer.bas.metaapesgame.com/",
         },
       },
     ]
