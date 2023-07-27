@@ -1,0 +1,79 @@
+
+## L1 => L2
+
+goerli -> linea: 0xaA012D038E6440535Ec66eDf2DA592F4F8398133
+	
+	1、goerli 0x113d7546f66555C8124a71a2886Ac855272e4ab1(erc20 token) 授权给 0xaA012D038E6440535Ec66eDf2DA592F4F8398133.
+	
+	2、调用goerli: 0xaA012D038E6440535Ec66eDf2DA592F4F8398133 上的 bridgeToken 的方法
+		三个参数:
+		_token: erc20 token
+		_amount: bridge erc20 amount
+		_recipient: receiver of erc20 token
+
+		bridgeToken(value): 这是支付给邮递员消息服务以自动执行第二层传输的费用。用户最终将收到_fee。我们建议提供 0.001 ETH 费用以确保正确执行。注意：金额单位为wei，因此0.001 ETH = 1000000000000000。
+
+	3、后端监控goerli链 BridgingInitiated(0xaA012D038E6440535Ec66eDf2DA592F4F8398133) 事件, 并取到 MessageSent(0x70bad09280fd342d02fe64119779bc1f0791bac2) 事件内的所有数据
+	
+	4、监控 linea 链的L1L2MessageHashesAddedToInbox (0xc499a572640b64ea1c8c194c43bc3e19940719dc) 事件, 比对MessageSent 的数据中的messageHash , 如果存在的话, 所以用户可以在 linea 上自行 进行claimMessage 操作
+
+	5、前端 在 linea 上 调用 claimMessage(0xc499a572640b64ea1c8c194c43bc3e19940719dc) 填入 MessageSent 的数据
+
+
+
+	example:
+		https://goerli.etherscan.io/tx/0x0bb5e1211804f506852d4be8e66d296f84ecc36a41f2fb2cf7b940062efa05cb
+		
+		中间后端监控到 https://goerli.lineascan.build/tx/0xc8743f0e67c98b9f10df3157609900e64b1cd2ed3bfc4a41ee4a7aae1c5d37bf#eventlog 这个事件后, 前端就可以进行下面的调用了
+
+		https://goerli.lineascan.build/tx/0xd0f3b732e174a1931056265c88740960003906da2a0fd9174abe51c02c8d19c0
+
+
+
+
+## L2 => L1
+
+linea -> goerli: 0xb191e3d98074f92584e5205b99c3f17fb2068927
+
+	1、linea 0x25242b15cc1e0cea7673ce7009ca45688d8d155c(goerli 上的erc20 token 在linea 上的映射 erc20 地址) 授权给 0xb191e3d98074f92584e5205b99c3f17fb2068927
+	
+	2、调用 0xb191e3d98074f92584e5205b99c3f17fb2068927 上的 上的 bridgeToken 的方法
+
+	3、监控到 linea 链上 的 BridgingInitiated (0xb191e3d98074f92584e5205b99c3f17fb2068927) ,并取到 MessageSent(0xc499a572640b64ea1c8c194c43bc3e19940719dc) 事件内的所有数据, 同时要包含这笔交易blockNumber
+
+	## 以下 是 猜测
+
+	4、监控goerli 链上 的 BlockFinalized (0x70bad09280fd342d02fe64119779bc1f0791bac2) 事件, 如果 该事件内的block number 大于等于 linea 链上的 这笔 bridge 的block, 则表示可以在 goerli 上进行 claim message 操作
+
+
+
+	example:
+		https://goerli.lineascan.build/tx/0x6e33735adee37334f578886b36168831593552f0ed11771e7f5db53829949db1
+
+
+
+## erc20 token(mock)
+
+erc20:
+	goerli : 0x113d7546f66555c8124a71a2886ac855272e4ab1
+	linea: 0x25242b15cc1e0cea7673ce7009ca45688d8d155c
+
+
+
+
+## 后端需要监控的合约
+
+MessageSent log 中的 _messageHash 与 MessageClaimed 中的 _messageHash 一致
+
+监听 MessageSent(将代币发送到另一个链) & MessageClaimed (另外一个链接受)
+goerli: 0x70bad09280fd342d02fe64119779bc1f0791bac2 
+linea: 0xc499a572640b64ea1c8c194c43bc3e19940719dc
+
+监听到 对应的事件后, 需要通过 tx 去找到 对应的 BridgingInitiated(和 MessageSent 同在) 事件 or BridgingFinalized(和 MessageClaimed 同在) 事件
+
+
+
+
+
+
+
