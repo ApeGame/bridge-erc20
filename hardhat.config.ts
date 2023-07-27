@@ -89,6 +89,32 @@ const config: HardhatUserConfig = {
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
+    lineatest: {
+      url: "https://rpc.goerli.linea.build/",
+      chainId: 59140,
+      accounts:
+        process.env.PRIVATE_KEY_TEST !== undefined
+          ? [process.env.PRIVATE_KEY_TEST]
+          : [],
+    },
+    basegoerli: {
+      url: "https://goerli.base.org",
+      chainId: 84531,
+      gasPrice: 1500000000,
+      accounts:
+        process.env.PRIVATE_KEY_TEST !== undefined
+          ? [process.env.PRIVATE_KEY_TEST]
+          : [],
+    },
+    basemainnet: {
+      url: "https://developer-access-mainnet.base.org",
+      chainId: 8453,
+      gasPrice: 100000001,
+      accounts:
+        process.env.PRIVATE_KEY_TEST !== undefined
+          ? [process.env.PRIVATE_KEY_TEST]
+          : [],
+    },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
