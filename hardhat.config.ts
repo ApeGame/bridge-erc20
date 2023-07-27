@@ -37,12 +37,16 @@ const config: HardhatUserConfig = {
     bsctest: {
       url: process.env.BSC_TEST_URL || "",
       accounts:
-        process.env.PRIVATE_KEY_TEST !== undefined ? [process.env.PRIVATE_KEY_TEST] : [],
+        process.env.PRIVATE_KEY_TEST !== undefined
+          ? [process.env.PRIVATE_KEY_TEST]
+          : [],
     },
     coq: {
       url: process.env.COQ_URL || "",
       accounts:
-        process.env.PRIVATE_KEY_TEST !== undefined ? [process.env.PRIVATE_KEY_TEST] : [],
+        process.env.PRIVATE_KEY_TEST !== undefined
+          ? [process.env.PRIVATE_KEY_TEST]
+          : [],
     },
     bsc: {
       url: process.env.BSC_MAIN_URL || "",
@@ -62,12 +66,42 @@ const config: HardhatUserConfig = {
     polygontest: {
       url: process.env.POLYGON_TEST_URL || "",
       accounts:
-        process.env.PRIVATE_KEY_TEST !== undefined ? [process.env.PRIVATE_KEY_TEST] : [],
+        process.env.PRIVATE_KEY_TEST !== undefined
+          ? [process.env.PRIVATE_KEY_TEST]
+          : [],
     },
     polygontestzkevm: {
       url: process.env.POLYGON_TEST_ZKEVM_URL || "",
       accounts:
-        process.env.PRIVATE_KEY_TEST !== undefined ? [process.env.PRIVATE_KEY_TEST] : [],
+        process.env.PRIVATE_KEY_TEST !== undefined
+          ? [process.env.PRIVATE_KEY_TEST]
+          : [],
+    },
+    lineatest: {
+      url: "https://rpc.goerli.linea.build/",
+      chainId: 59140,
+      accounts:
+        process.env.PRIVATE_KEY_TEST !== undefined
+          ? [process.env.PRIVATE_KEY_TEST]
+          : [],
+    },
+    basegoerli: {
+      url: "https://goerli.base.org",
+      chainId: 84531,
+      gasPrice: 1500000000,
+      accounts:
+        process.env.PRIVATE_KEY_TEST !== undefined
+          ? [process.env.PRIVATE_KEY_TEST]
+          : [],
+    },
+    basemainnet: {
+      url: "https://developer-access-mainnet.base.org",
+      chainId: 8453,
+      gasPrice: 100000001,
+      accounts:
+        process.env.PRIVATE_KEY_TEST !== undefined
+          ? [process.env.PRIVATE_KEY_TEST]
+          : [],
     },
   },
   gasReporter: {
@@ -97,7 +131,7 @@ const config: HardhatUserConfig = {
           browserURL: "https://explorer.bas.metaapesgame.com/",
         },
       },
-    ]
+    ],
   },
 };
 
