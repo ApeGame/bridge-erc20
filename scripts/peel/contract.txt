@@ -10,6 +10,7 @@ erc20 <=> native token
     peel(eth): 0x1ed81e03d7ddb67a21755d02ed2f24da71c27c55
     peel(polygon zkemv): 0x4C1b9a05675cDFd80027635D1925F65f1dB12400
     peel(zksync): 0x04f81e491029E54A0BED72aE3ebb041b84586efB
+    peel(base): 0xedb6Cd6D456Cd3C07F414208C8C0015b17744141
 
 proxy admin:
     bsc: 0x7613e16ea0097A4d6f3823432C3694bBEF0cB7fD

@@ -10,7 +10,7 @@ import { ethers, upgrades } from "hardhat";
 const baseUrl: string = "https://api.basescan.org/api";
 const apikey: string = "3WGNMRP6F45GDZVQDGEI3DWQDSP4YDJ9JU";
 
-const peelContract: string = "";
+const peelContract: string = "0xedb6Cd6D456Cd3C07F414208C8C0015b17744141";
 const pubKey = "0x5767A8EdE4d14595162920C4019a5e79D685FF67";
 const feeReceiver = "0x5767A8EdE4d14595162920C4019a5e79D685FF67";
 
