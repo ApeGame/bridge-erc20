@@ -3,6 +3,7 @@ bridge:
     ape: 0x7dd5Fac4A970E84aC2f1975947ba91A11b201Dff (new)
     polygon: 0x401c4E84FCEE54E07fE0c5154cC3922c8d2c8892
     eth: 0x261a69E6315b95D9ef824b72D983F8089f982F17
+    base: 0xd988e3333a75a098896b6f9125b845a3d6441995
 
 erc20 <=> native token
     peel(bsc): 0x734548a9e43d2d564600b1b2ed5be9c2b911c6ab
