@@ -97,6 +97,12 @@ const config: HardhatUserConfig = {
           ? [process.env.PRIVATE_KEY_TEST]
           : [],
     },
+    lineamain: {
+      url: "https://shanghai-inner-rpc.ankr.com/all/linea_mainnet/rpc",
+      chainId: 59144,
+      accounts:
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
     basegoerli: {
       url: "https://goerli.base.org",
       chainId: 84531,
