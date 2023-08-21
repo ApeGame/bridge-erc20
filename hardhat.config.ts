@@ -99,6 +99,7 @@ const config: HardhatUserConfig = {
     },
     lineamain: {
       url: "https://shanghai-inner-rpc.ankr.com/all/linea_mainnet/rpc",
+      // url: "http://127.0.0.1:8545",
       chainId: 59144,
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],

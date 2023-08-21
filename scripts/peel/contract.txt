@@ -4,6 +4,7 @@ bridge:
     polygon: 0x401c4E84FCEE54E07fE0c5154cC3922c8d2c8892
     eth: 0x261a69E6315b95D9ef824b72D983F8089f982F17
     base: 0xd988e3333a75a098896b6f9125b845a3d6441995
+    linea: 0x1638C84dDeDa36f072e5c04EAe9587470E75E141
 
 erc20 <=> native token
     peel(bsc): 0x734548a9e43d2d564600b1b2ed5be9c2b911c6ab
@@ -12,6 +13,7 @@ erc20 <=> native token
     peel(polygon zkemv): 0x4C1b9a05675cDFd80027635D1925F65f1dB12400
     peel(zksync): 0x04f81e491029E54A0BED72aE3ebb041b84586efB
     peel(base): 0xedb6Cd6D456Cd3C07F414208C8C0015b17744141
+    peel(linea): 0x76cfA539706215B3296De65a701dfb69E000F85E
 
 proxy admin:
     bsc: 0x7613e16ea0097A4d6f3823432C3694bBEF0cB7fD
