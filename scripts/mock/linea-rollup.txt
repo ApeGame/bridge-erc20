@@ -1,32 +1,34 @@
 
+bridge : https://bridge.linea.build/
+
 ## L1 => L2
 
-goerli -> linea: 0xaA012D038E6440535Ec66eDf2DA592F4F8398133
+goerli -> linea: 0x5506A3805fB8A58Fa58248CC52d2b06D92cA94e6
 	
 	1、goerli 0x113d7546f66555C8124a71a2886Ac855272e4ab1(erc20 token) 授权给 0xaA012D038E6440535Ec66eDf2DA592F4F8398133.
 	
-	2、调用goerli: 0xaA012D038E6440535Ec66eDf2DA592F4F8398133 上的 bridgeToken 的方法
+	2、调用goerli: 0x5506A3805fB8A58Fa58248CC52d2b06D92cA94e6 上的 bridgeToken 的方法
 		三个参数:
 		_token: erc20 token
 		_amount: bridge erc20 amount
 		_recipient: receiver of erc20 token
 
-		bridgeToken(value): 这是支付给邮递员消息服务以自动执行第二层传输的费用。用户最终将收到_fee。我们建议提供 0.001 ETH 费用以确保正确执行。注意：金额单位为wei，因此0.001 ETH = 1000000000000000。
+		bridgeToken(value): 这是支付给邮递员消息服务以自动执行第二层传输的费用。用户最终将收到_fee。
 
-	3、后端监控goerli链 BridgingInitiated(0xaA012D038E6440535Ec66eDf2DA592F4F8398133) 事件, 并取到 MessageSent(0x70bad09280fd342d02fe64119779bc1f0791bac2) 事件内的所有数据
+	3、后端监控goerli链 BridgingInitiated(0x5506A3805fB8A58Fa58248CC52d2b06D92cA94e6) 事件, 并取到 MessageSent(0x70bad09280fd342d02fe64119779bc1f0791bac2) 事件内的所有数据
 	
-	4、监控linea 链上 message 合约的(官方会调用addL1L2MessageHashes 方式) L1L2MessageHashesAddedToInbox 事件, 监控 是否含有对应 的 messageHash, 有则可以进行接下来的行为
+	4、监控linea 链上 message 合约的(官方会调用addL1L2MessageHashes 方式) L1L2MessageHashesAddedToInbox 事件(0xc499a572640b64ea1c8c194c43bc3e19940719dc), 监控 是否含有对应 的 messageHash, 有则可以进行接下来的行为
 
 	5、前端 在 linea 上 调用 claimMessage(0xc499a572640b64ea1c8c194c43bc3e19940719dc) 填入 MessageSent 的数据
 
 
 
 	example:
-		https://goerli.etherscan.io/tx/0x0bb5e1211804f506852d4be8e66d296f84ecc36a41f2fb2cf7b940062efa05cb
+		前端调用即后端监控 https://goerli.etherscan.io/tx/0xcf46b1419cb818f03edba8168a9405cad0ea66878aee0e67f7b66243ee75d7bc (bridgeToken, 前端调用, 后端监控 BridgingInitiated & MessageSent, 需要拿到 messageHash)
 		
-		中间后端监控到 https://goerli.lineascan.build/tx/0xc8743f0e67c98b9f10df3157609900e64b1cd2ed3bfc4a41ee4a7aae1c5d37bf#eventlog 这个事件后, 前端就可以进行下面的调用了
+		中间后端监控到 https://goerli.lineascan.build/tx/0xcbd8b70f81f7a9272a67d0c0ad8ba09c7d2b25b6f59dfb7d6a3302f99dfbc8df#eventlog (在linea 上 监控 L1L2MessageHashesAddedToInbox 事件, 直到 确认 有 goerli 上的messageHash)
 
-		https://goerli.lineascan.build/tx/0xd0f3b732e174a1931056265c88740960003906da2a0fd9174abe51c02c8d19c0
+		前端调用即后端监控 https://goerli.lineascan.build/tx/0x9f6028e0adb22551677b8da6401e1c542cda13cd959d3ce0753ab37c5260b899
 
 
 
@@ -37,7 +39,7 @@ linea -> goerli: 0xb191e3d98074f92584e5205b99c3f17fb2068927
 
 	1、linea 0xd64134a65ae475927ed2711b967a5f08702615cd(goerli 上的erc20 token 在linea 上的映射 erc20 地址) 授权给 0xb191e3d98074f92584e5205b99c3f17fb2068927
 	
-	2、调用 0xb191e3d98074f92584e5205b99c3f17fb2068927 上的 上的 bridgeToken 的方法
+	2、调用 0xb191e3d98074f92584e5205b99c3f17fb2068927 上的 上的 bridgeToken 的方法, 要给0.001 eth. 
 
 	3、监控到 linea 链上 的 BridgingInitiated (0xb191e3d98074f92584e5205b99c3f17fb2068927) ,并取到 MessageSent(0xc499a572640b64ea1c8c194c43bc3e19940719dc) 事件内的所有数据, 同时要包含这笔交易blockNumber
 
@@ -48,8 +50,11 @@ linea -> goerli: 0xb191e3d98074f92584e5205b99c3f17fb2068927
 
 
 	example:
-		https://goerli.lineascan.build/tx/0x6e33735adee37334f578886b36168831593552f0ed11771e7f5db53829949db1
+		前端调用即后端监控 https://goerli.lineascan.build/tx/0xb4e9e4170bbd8c17878896e8154e7ac9e2a61411b7561d2c20e7df36b61d5de2 (bridgeToken, 前端调用, 后端监控 BridgingInitiated & MessageSent, 需要拿到 messageHash)
 
+		中间监控 https://goerli.etherscan.io/tx/0x8643a6e3c04351b0db018eed8b5da126d6568e4fd0fa1779342a5dcc89bb1610#eventlog (后端监控 BlockFinalized)
+
+		前端调用即后端监控 https://goerli.etherscan.io/tx/0x50637e79c45e114d18536f30329d5b30d4e8e491f694124d09bfb31e757b92f5
 
 
 ## erc20 token(mock)
@@ -61,22 +66,18 @@ erc20:
 goerli:
 	bridgeToken: 0x5506A3805fB8A58Fa58248CC52d2b06D92cA94e6 (从 goerli -> linea 发起交易)
 	BlockFinalized(event): 0x70BaD09280FD342D02fe64119779BC1f0791BAC2 (监控 blockNumber 是否到达 (linea -> goerli) 发起交易时的块 )
+	claimMessage: 0x70BaD09280FD342D02fe64119779BC1f0791BAC2
 linea:
-	L1L2MessageHashesAddedToInbox(event): 0xc499a572640b64ea1c8c194c43bc3e19940719dc (监控 goerli 桥的MessageSent 的 message hash )
 	bridgeToken: 0x3ccd0f623b7a25eab5dfc6a3fd723dce5520489b
-
-
-测试:
-	goerli -> linea:
-		bridge token: https://goerli.etherscan.io/tx/0x5373c1f159b7d3d652aba5df5f063ab33c9fd77857f9797f9717fd93bf382029#eventlog
-		claim message:  https://goerli.lineascan.build/tx/0x02c044e91821eb3132d662294abb6a0373b811b65234844ebcf93c0750bb99fc 
-	linea -> goerli:
-		bridge token https://goerli.lineascan.build/tx/0xdd8960137fb85e5d4e71f9fa6fb2cd8e1a182071597541644ba0d8609df8b99b
-		claim message: https://goerli.etherscan.io/tx/0xab2f29ad1443edfa5afd7993f093135600fd83cd6bc9ef24d84d13bf9667fc2d
+	L1L2MessageHashesAddedToInbox(event): 0xc499a572640b64ea1c8c194c43bc3e19940719dc (监控 goerli 桥的MessageSent 的 message hash )
+	claimMessage: 0xc499a572640b64ea1c8c194c43bc3e19940719dc
+	
 
 
 
 
+
+---------------------------- 主网 -----------------------
 
 
 主网:
