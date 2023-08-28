@@ -1,0 +1,89 @@
+polygon zkevm
+
+L1 -> L2:
+	1 授权 0x113d7546f66555C8124a71a2886Ac855272e4ab1 的代币 给 0xF6BEEeBB578e214CA9E23B0e9683454Ff88Ed2A7
+
+	2 前端调用 0xF6BEEeBB578e214CA9E23B0e9683454Ff88Ed2A7 的 bridgeAsset 方法
+			bridgeAsset(uint32 destinationNetwork,address destinationAddress,uint256 amount,address token,bool forceUpdateGlobalExitRoot,bytes permitData)
+
+			destinationNetwork: 1
+			destinationAddress: 用户地址
+			amount: 桥的金额
+			token: erc20 token 
+			forceUpdateGlobalExitRoot: 1
+			permitData: 0x
+
+		后端 监控 BridgeEvent, 其中 depositCount 可能具有唯一性
+
+
+	3、 后端监控 zkevm 上的 ClaimEvent 事件, 内部含有 originAddress , index 两个参数, originAddress (0x113d7546f66555C8124a71a2886Ac855272e4ab1) 用户过滤 erc20, index 与 depositCount 对应
+			监控到后即为 桥完成
+
+
+	example: 
+		bridgeAsset: https://goerli.etherscan.io/tx/0xa0e0a3928aa837a54b66f1647ed4e5c4d3c12b8ecb38271bdc75b1fd3601bdd2
+
+		claimAsset: https://testnet-zkevm.polygonscan.com/tx/0x2f70287ad6740eca782dff5101d87635b247d9fc7ed813e9bbf10fea64f6d541 (zkevm 干了, 后端监控 )
+
+
+L2 -> L1:
+	1、授权 0xbe9a8e678b33d9e09d2d3d84a4bd17e68d13560c 的代币给 0xf6beeebb578e214ca9e23b0e9683454ff88ed2a7
+
+	2、调用 0xf6beeebb578e214ca9e23b0e9683454ff88ed2a7 bridgeAsset 方法
+				bridgeAsset(uint32 destinationNetwork,address destinationAddress,uint256 amount,address token,bool forceUpdateGlobalExitRoot,bytes permitData)
+
+				destinationNetwork: 0
+				destinationAddress: 用户地址
+				amount: 桥的金额
+				token: erc20 token
+				forceUpdateGlobalExitRoot: 1
+				permitData: 0x
+
+		后端 监控 BridgeEvent, 其中 depositCount 可能具有唯一性
+	
+
+	3、前端可以调用 从 https://proof-generator.polygon.technology/api/zkevm/testnet/merkle-proof?net_id=1&deposit_cnt=42856 获取 proof 信息(main_exit_root, merkle_proof, rollup_exit_root). 当未生成时, 没有该信息则会显示 {"error":true,"message":"not synchronized deposit"}
+
+	4、调用 claimAsset 
+			claimAsset(bytes32[32] smtProof,uint32 index,bytes32 mainnetExitRoot,bytes32 rollupExitRoot,uint32 originNetwork,address originTokenAddress,uint32 destinationNetwork,address destinationAddress,uint256 amount,bytes metadata)
+				smtProof: merkle_proof
+				index: depositCount
+				mainnetExitRoot: main_exit_root
+				rollupExitRoot: rollup_exit_root
+				originNetwork: 0
+				originTokenAddress: goerli 上的 erc20 token 
+				destinationNetwork: 0
+				destinationAddress: 用户地址
+				amount: 金额
+				bytes:  BridgeEvent 里面的bytes 后端要存储
+
+	5、后端监控 ClaimEvent , 后端监控 zkevm 上的 ClaimEvent 事件, 内部含有 originAddress , index 两个参数, originAddress (0x113d7546f66555C8124a71a2886Ac855272e4ab1) 用户过滤 erc20, index 与 depositCount 对应
+			监控到后即为 桥完成
+
+
+
+example: 
+		bridgeAsset: https://testnet-zkevm.polygonscan.com/tx/0x0217479282b02959fe123a84d5e55136ef2161efc7684047deae53481204c9ab
+
+		claimAsset: https://testnet-zkevm.polygonscan.com/tx/0x2f70287ad6740eca782dff5101d87635b247d9fc7ed813e9bbf10fea64f6d541 (zkevm 干了, 后端监控 )
+
+
+
+
+
+
+
+
+
+
+
+------------------------- 主网 ------------------------
+
+
+L1 -> L2:
+	
+	bridgeAsset: https://etherscan.io/tx/0xc6a55f141e0e67c4d879e1e7c8e821add9b0d1739436b3934a3e091b43041670
+	claimAsset: https://zkevm.polygonscan.com/tx/0x4ed32f25d8dcd366ce3a766e98b9d1ba806f4b7c4ec90dfa19fbff1881bb29fd 
+
+
+L2 -> L1:
